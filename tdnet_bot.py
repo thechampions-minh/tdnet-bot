@@ -36,7 +36,7 @@ try:
         if len(c) < 4: continue
         jikoku, code, name, title = [x.text.strip() for x in c[:4]]
         
-        if any(k in title for k in ['上方修正','黒字転換','大型受注','株式分割','自社株買い']) and jikoku[:2] in ['09','10','11','12','13','14','15']:
+        if any(k in title for k in ['上方修正','黒字転換','大型受注','株式分割','自社株買い','業務提携','資本提携','TOB','MBO']):
             uid = code + jikoku + title
             if uid not in sent:
                 msg = f'🚨 {jikoku}\n{code} {name}\n{title}\nhttps://www.release.tdnet.info/inbs/I_list_001_{code}.html'
