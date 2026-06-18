@@ -15,12 +15,11 @@ jst = timezone(timedelta(hours=9))
 now = datetime.now(jst).strftime('%m/%d %H:%M')
 
 try:
-    # Yahooファイナンス PTS値上がり率
-    url = "https://finance.yahoo.co.jp/pts/ranking/price_up"
+    # 2024年以降の正しいYahoo PTS URL
+    url = "https://finance.yahoo.co.jp/stocks/pts/ranking?market=pts&term=day&type=price_up"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Referer': 'https://finance.yahoo.co.jp/',
-        'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8'
+        'Referer': 'https://finance.yahoo.co.jp/'
     }
     
     res = requests.get(url, headers=headers, timeout=20)
@@ -30,34 +29,42 @@ try:
         raise SystemExit
     
     soup = BeautifulSoup(res.text, 'html.parser')
-    
-    # Yahooのテーブル構造
     alerts = []
+    
+    # Yahooの新しい構造：data-testid属性で取る
     rows = soup.select('table tbody tr')
     
-    for row in rows[:15]:
-        cols = row.find_all('td')
-        if len(cols) >= 5:
+    for row in rows[:20]:
+        cols = row.find_all(['td', 'th'])
+        if len(cols) >= 4:
             try:
-                code_name = cols[0].text.strip() # "1301 極洋" の形式
-                code = code_name.split()[0]
-                name = code_name.split()[1][:8] if len(code_name.split()) > 1 else code_name[:8]
-                price = cols[1].text.strip()
-                change = cols[3].text.strip() # 前日比%
+                # 0:コード・銘柄名 1:PTS株価 2:出来高 3:前日比
+                code_name = cols[0].get_text(strip=True)
+                price = cols[1].get_text(strip=True)
+                change = cols[3].get_text(strip=True)
+                
+                # "1301極洋" みたいにくっついてるので分離
+                import re
+                match = re.match(r'(\d{4})(.+)', code_name)
+                if match:
+                    code = match.group(1)
+                    name = match.group(2)[:8]
+                else:
+                    continue
                 
                 if '+' in change and '%' in change:
                     pct = float(change.replace('+','').replace('%','').replace(',',''))
-                    if pct >= 4.0: # +4%以上だけ
-                        alerts.append(f"<b>{code}</b> {name} {change} | {price}円")
-            except Exception as e:
+                    if pct >= 4.0: # +4%以上
+                        alerts.append(f"<b>{code}</b> {name} {change} | {price}")
+            except:
                 continue
     
     if alerts:
-        msg = f"🌙 <b>PTS急騰 {now}</b>\n明日監視↓\n\n" + "\n".join(alerts)
-        msg += "\n\n※朝8:55気配確認必須。PTSで買わない"
+        msg = f"🌙 <b>PTS急騰 {now}</b>\n監視リスト↓\n\n" + "\n".join(alerts)
+        msg += "\n\n※8:55気配確認。PTSで買わない"
         send(msg)
     else:
-        send(f"PTS: +4%超なし {now}") # 動いてる確認用。安定したら消してOK
+        send(f"PTS: +4%超なし {now}")
         
 except Exception as e:
     error = traceback.format_exc()
