@@ -2,17 +2,19 @@ name: TDnet Bot
 
 on:
   schedule:
-    - cron: '*/5 0-6 * * 1-5'  # UTC 0-6時 = 日本9-15時。平日のみ。5分おき
-  workflow_dispatch:  # 手動実行ボタン
+    - cron: '*/5 0-6 * * 1-5'  # 日本9-15時。平日5分おき
+  workflow_dispatch:
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+    permissions:          # ← この3行を追加
+      contents: write     # ← リポジトリへの書き込み権限
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4  # ← v3をv4に更新。警告も消える
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5  # ← v4をv5に更新
         with:
           python-version: '3.10'
           
