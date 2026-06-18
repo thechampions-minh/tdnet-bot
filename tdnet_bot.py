@@ -3,12 +3,11 @@ import json
 import os
 from bs4 import BeautifulSoup
 
-# ===== ここ2行だけ書き換える =====
-TOKEN = '8950681253:AAFMduvBf_-ePdaF6Jpxa_QPg0GaiMJsGgA'
-CHAT_ID = '8738195981'
-# =================================
+# ===== GitHub Secretsから読み込み =====
+TOKEN = os.environ['TELEGRAM_TOKEN']
+CHAT_ID = os.environ['TELEGRAM_CHAT_ID']
+# ======================================
 
-# 送信済みIDを保存するファイル
 SENT_FILE = 'sent_ids.json'
 
 def load_sent():
@@ -26,7 +25,6 @@ def send_msg(text):
     requests.post(url, data={'chat_id': CHAT_ID, 'text': text})
     print('送信:', text)
 
-# 送信済み読み込み
 sent = load_sent()
 
 try:
@@ -38,7 +36,6 @@ try:
         if len(c) < 4: continue
         jikoku, code, name, title = [x.text.strip() for x in c[:4]]
         
-        # 重要ワード判定 + 市場時間のみ
         if any(k in title for k in ['上方修正','黒字転換','大型受注','株式分割','自社株買い']) and jikoku[:2] in ['09','10','11','12','13','14','15']:
             uid = code + jikoku + title
             if uid not in sent:
@@ -46,7 +43,6 @@ try:
                 send_msg(msg)
                 sent.add(uid)
 
-    # 送信済みを保存
     save_sent(sent)
     
 except Exception as e:
