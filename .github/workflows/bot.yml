@@ -31,3 +31,9 @@ jobs:
           git add sent_ids.json
           git commit -m "Update sent_ids" || exit 0
           git push
+          
+      - name: Run bot
+        env:                           # ← この2行追加
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}  # ← 
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }} # ←
+        run: python tdnet_bot.py
