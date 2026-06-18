@@ -36,7 +36,7 @@ def check_pts():
                     if '+' in change:
                         try:
                             pct = float(change.replace('+','').replace('%','').replace(',',''))
-                            if pct > 4:
+                            if pct > 0:
                                 alerts.append(f"<b>{code}</b> {name} {change} | {price}円")
                         except: continue
         
