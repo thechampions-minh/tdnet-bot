@@ -49,3 +49,4 @@ except Exception as e:
     print('エラー:', e)
 
 print('チェック完了')
+send_msg('🧪 TDnet Bot テスト成功！GitHubから届いたよ') 
